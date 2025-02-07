@@ -64,7 +64,7 @@ Scripts are organized by figure for replicating analyses and visualizations from
 
 ## License
 
-This project is licensed under the [...] License. 
+This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). 
 
 ## Acknowledgments
 
