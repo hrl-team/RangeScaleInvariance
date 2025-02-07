@@ -1,4 +1,4 @@
-# Achieving scale-independent reinforcement learning performance with reward range normalization
+# Achieving Scale-Independent Reinforcement Learning Performance With Reward Range Normalization
 
 ## Table of Contents
 1. [Overview](#overview)
