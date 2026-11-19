@@ -1,0 +1,7 @@
+# What the seven notebooks need. Versions are those the published
+# simulations were run with; anything reasonably recent will do.
+numpy==1.25.2
+pandas==2.1.0
+matplotlib==3.8.0
+pillow==10.0.0
+jupyter

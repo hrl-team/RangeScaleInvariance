@@ -1,76 +1,45 @@
-# Achieving Scale-Independent Reinforcement Learning Performance With Reward Range Normalization
+# Achieving Scale-Invariant Reinforcement Learning Performance with Reward Range Normalization
 
-## Table of Contents
-1. [Overview](#overview)
-3. [Requirements](#requirements)
-4. [Usage](#usage)
-5. [License](#license)
-6. [Acknowledgments](#acknowledgments)
-7. [Fundings](#fundings)
+Code and aggregated data reproducing figures and analyses of the article.
 
----
+    pip install -r requirements.txt
 
-## Overview
+## What is here
 
-The repository contains the codes to reproduce the simulations presented in the preprint available here: https://doi.org/10.31234/osf.io/bjyr9. 
+    normnorm/      the models and the tasks
+                     bandit.py        two-armed bandit, ABS and RA
+                     dynamic.py       expanding, shrinking and drifting ranges
+                     narmed.py        N-armed and non-stationary bandits
+                     gridworld.py     the 4x4 grid
+                     seasons.py       the seasonal gridworld
+                     sweep.py         readers for the learning-rate sweep
+                     optimal_rates.py the expansion/contraction grid
+                     tradeoff.py      trade-off quality and apparent beta
+    data/          the aggregates the figures read, about a megabyte
+    notebooks/     Figure1.ipynb to Figure7.ipynb (not part of this release)
+    style.py       colours, sizes and the save helper, shared by the notebooks (not part of this release)
 
-Key Contributions:
-Range Adaptation Mechanism: Normalizes reward encoding within a fixed scale, yielding stable performance across various conditions.
-Model Comparison: Demonstrates RA’s scale-invariant performance in two-armed bandit tasks and multi-step decision scenarios.
-Exploration-Exploitation Balance: Shows RA’s capability to optimize exploration automatically.
+## Running a new simulation
 
-This repository includes scripts and code to replicate the simulations and analyses outlined in the article.
+The notebooks redraw the published figures from the aggregates. To simulate
+something new, import from `normnorm` directly.
 
+Example for a stationary two-armed bandit, 200 agents at one magnitude and one
+discriminability:
 
-## Requirements
+```python
+import numpy as np
+from normnorm.bandit import make_rewards, simulate_bandit
 
-- [python](https://www.python.org/downloads/release/python-31012/) 3.10.12
-- [numpy](https://numpy.org/) v.1.25.2
-- [pandas](https://pandas.pydata.org/) v.2.1.0
-- [seaborn](https://seaborn.pydata.org/) v.0.13.0
-- [matplotlib](https://matplotlib.org/) v.3.8.0
-- [hyperopt](https://github.com/hyperopt/hyperopt) v.0.2.7 for parameter optimization
-- [progressbar](https://pypi.org/project/progressbar2/) v.2.5 for tracking progress in simulations
-- [COBA](https://coba-docs.readthedocs.io/en/latest/getting_started.html) v.8.0.5 for multi-tasks simulations
-- [tqdm](https://tqdm.github.io/) v.4.66.1 for tracking progress in COBA simulations
-- [scipy](https://scipy.org/) v.1.11.2
+rng = np.random.default_rng(0)
+rewards = make_rewards(magnitude=10.0, discriminability=0.25, n_trials=80)
 
+alpha_q = rng.random(200)                  # one Q learning rate per agent
+alpha_exp = rng.random(200)                # expansion of the range
+alpha_con = alpha_exp * rng.random(200)    # contraction, always the slower
 
-## Usage
-
-This section provides a recommended order to explore the codebase, starting with foundational modules and moving to analyses associated with figures from the paper.
-
-#### Foundational Scripts
-To understand the core functions and modules used across all analyses:
-
-1. **`agents.py`** - Defines agent behaviors and learning strategies.
-2. **`models.py`** - Establishes core models and simulation frameworks.
-3. **`general_functions.py`** - Contains functions used across different analyses.
-
-#### Analysis by Figures in the Article
-
-Scripts are organized by figure for replicating analyses and visualizations from the paper:
-
-- **Figure 3: Performance in two-armed bandits tasks**:
-  - `simulations_figure3.py` - Runs simulations for ABS and RA agents in two-armed bandits tasks with varying magnitude and discriminability levels.
-  - `analysis_figure3A_3B_3C.py` - Analysis scripts for parts A, B, and C of Figure 3: Bandit task performance.
-  - `analysis_figure3D.py` - Simulations and analysis script specific to exploring the trade-off quality per ABS β value and magnitude level and estimating RA's apparent β value.
-
-- **Figure 4: Behavioral signatures of the ABS and RA models**:
-  - `analysis_figure4.py` - Performs simulations and analyses for comparing performance signatures of ABS and RA model at the population level, and to show what happens when the β value is manipulated.
-
-- **Figure 5: RA model latent variables**:
-  - `analysis_figure5.py` - Code for simulations and analysis specific to RA model latent variables.
-
-## License
-
-This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). 
-
-## Acknowledgments
-
-We would like to thank Julien Karadayi for his valuable contributions during the code review process, providing insightful feedback that enhanced the organization and readability of this code.
-Additionally, we wish to acknowledge the invaluable resources provided by the open-source libraries and tools used in this project.
-
-## Fundings
-This research project received the support from the European Research Council consolidator grant (RaReMem:  101043804) and three Agence Nationale de  la Recherche grants (CogFinAgent: ANR-21-CE23-0002-02; RELATIVE: ANR-21-CE37-750  0008-01; RANGE: ANR-21-CE28-0024-01), the Alexander Von Humbolt foundation and a Google unrestricted gift.
-
+abs_ = simulate_bandit(rewards, "ABS", alpha_q, beta=1.0)
+ra = simulate_bandit(rewards, "RA", alpha_q, beta=1.0,
+                     alpha_exp=alpha_exp, alpha_con=alpha_con)
+print(abs_.correct.mean(), ra.correct.mean())
+```
